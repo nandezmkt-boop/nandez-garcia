@@ -17,6 +17,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://nandez-garcia.vercel.app"),
   title: 'Nández García — Webs y productos digitales que consiguen clientes',
   description:
     'Ingeniero de sistemas, máster en marketing digital y experto en IA. Creo páginas web y productos digitales que traen clientes de verdad, en semanas en vez de meses.',
