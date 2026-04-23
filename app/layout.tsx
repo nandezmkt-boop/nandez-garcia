@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Space_Grotesk, Inter } from 'next/font/google'
-import '@/styles/globals.css'
+import '../styles/globals.css'
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -18,6 +18,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nandez-garcia.vercel.app"),
+  
   title: 'Nández García — Webs y productos digitales que consiguen clientes',
   description:
     'Ingeniero de sistemas, máster en marketing digital y experto en IA. Creo páginas web y productos digitales que traen clientes de verdad, en semanas en vez de meses.',
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
     title: 'Nández García — Webs y productos digitales que consiguen clientes',
     description:
       'Ingeniero + máster en marketing + IA aplicada. Construyo webs que captan clientes y convierto ideas en productos reales, en semanas.',
-    url: 'https://nandezgarcia.com',
+    url: "https://nandez-garcia.vercel.app",
     siteName: 'Nández García',
     locale: 'es_ES',
     type: 'website',
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
       'Tecnología + marketing + negocio en la misma persona. Resultados reales en semanas.',
   },
   robots: { index: true, follow: true },
-  alternates: { canonical: 'https://nandezgarcia.com' },
+  alternates: { canonical: 'https://nandez-garcia.vercel.app' },
 }
 
 export default function RootLayout({
