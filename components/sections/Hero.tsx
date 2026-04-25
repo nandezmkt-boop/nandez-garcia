@@ -70,16 +70,16 @@ export function Hero({ showUrgency = true }: { showUrgency?: boolean }) {
                 color: 'rgba(240,241,245,0.55)',
               }}
             >
-              Tu web puede estar bien hecha…
+              Tu web puede verse bien…
               <br />
-              y aun así no conseguirte ni un cliente.
+              pero no estar generando ni un solo cliente.
             </p>
 
             <h1
               className="font-head font-bold tracking-[-0.03em] leading-[1.08] mb-5"
               style={{ fontSize: 'clamp(28px,4.5vw,60px)' }}
             >
-              Construyo páginas web y productos digitales que{' '}
+              Convierte tu tráfico en clientes con una landing que{' '}
               <span
                 style={{
                   background:
@@ -88,7 +88,7 @@ export function Hero({ showUrgency = true }: { showUrgency?: boolean }) {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                sí generan clientes.
+                realmente vende.
               </span>
             </h1>
 
