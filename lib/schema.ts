@@ -6,6 +6,7 @@ export const contactSchema = z.object({
     .string()
     .min(20, 'Cuéntame un poco más (mínimo 20 caracteres)')
     .max(1000),
+  tipo: z.enum(['negocio', 'idea', 'no-claro']).optional(),
 })
 
 export type ContactInput = z.infer<typeof contactSchema>

@@ -3,7 +3,6 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { Hero } from '@/components/sections/Hero'
 import { Problema } from '@/components/sections/Problema'
-import { HistopIAs } from '@/components/sections/HistopIAs'
 import { Servicios } from '@/components/sections/Servicios'
 import { Proceso } from '@/components/sections/Proceso'
 import { PorQueYo } from '@/components/sections/PorQueYo'
@@ -17,12 +16,11 @@ export default function Home() {
       <Navbar />
       <main className="relative z-10">
         <Hero showUrgency />
+        <Testimonios />
         <Problema />
-        <HistopIAs />
         <Servicios />
         <Proceso />
         <PorQueYo />
-        <Testimonios />
         <CTAFinalCTA showUrgency />
       </main>
       <Footer />

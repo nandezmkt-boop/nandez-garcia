@@ -4,12 +4,12 @@ import Image from 'next/image'
 import { FadeIn } from '@/components/ui/FadeIn'
 
 const METRICS = [
-  { value: '7 días', label: 'Hasta los primeros resultados' },
-  { value: '1 persona', label: 'Contacto directo, sin rodeos' },
-  { value: '3 enfoques', label: 'Tecnología + marketing + negocio' },
+  { value: '7 días', label: 'Hasta los primeros leads o usuarios' },
+  { value: '+12 lanzados', label: 'Proyectos online y funcionando' },
+  { value: '<24h', label: 'Respuesta a tu mensaje' },
 ] as const
 
-const AVATARS = ['S', 'C', 'A', 'M'] as const
+const AVATARS = ['S', 'C', 'A'] as const
 
 export function Hero({ showUrgency = true }: { showUrgency?: boolean }) {
   return (
@@ -21,7 +21,6 @@ export function Hero({ showUrgency = true }: { showUrgency?: boolean }) {
           'clamp(88px,10vw,120px) clamp(16px,5vw,80px) clamp(60px,10vw,120px)',
       }}
     >
-      {/* Background orbs — clipped by overflow-hidden on section */}
       <div
         className="absolute pointer-events-none"
         style={{
@@ -44,7 +43,6 @@ export function Hero({ showUrgency = true }: { showUrgency?: boolean }) {
       />
 
       <div className="max-w-[1200px] mx-auto w-full flex flex-col lg:flex-row gap-12 lg:gap-20 lg:items-center">
-        {/* Left — Text */}
         <div className="flex-1 min-w-0">
           <FadeIn>
             {showUrgency && (
@@ -72,14 +70,14 @@ export function Hero({ showUrgency = true }: { showUrgency?: boolean }) {
             >
               Tu web puede verse bien…
               <br />
-              pero no estar generando ni un solo cliente.
+              y no estar trayendo ni un cliente.
             </p>
 
             <h1
               className="font-head font-bold tracking-[-0.03em] leading-[1.08] mb-5"
               style={{ fontSize: 'clamp(28px,4.5vw,60px)' }}
             >
-              Convierte tu tráfico en clientes con una landing que{' '}
+              Convierto ideas y tráfico en{' '}
               <span
                 style={{
                   background:
@@ -88,16 +86,21 @@ export function Hero({ showUrgency = true }: { showUrgency?: boolean }) {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                realmente vende.
+                negocio.
               </span>
+              <br />
+              En semanas, no en meses.
             </h1>
 
             <p
               className="text-muted leading-[1.75] mb-8 sm:mb-10 text-[16px] sm:text-[18px]"
-              style={{ maxWidth: 520 }}
+              style={{ maxWidth: 560 }}
             >
-              Para negocios que quieren clientes online, y para personas con
-              ideas que quieren verlas funcionando. En semanas, no en meses.
+              Si ya tienes un negocio, te construyo la página que capta clientes.
+              <br />
+              Si tienes una idea, la convierto en un producto que la gente puede usar.
+              <br />
+              Tecnología, marketing y negocio en la misma persona.
             </p>
           </FadeIn>
 
@@ -120,7 +123,7 @@ export function Hero({ showUrgency = true }: { showUrgency?: boolean }) {
                 Cuéntame tu caso →
               </a>
               <a
-                href="#servicios"
+                href="#testimonios"
                 className="inline-flex items-center justify-center gap-2 font-head font-semibold text-[15px] tracking-tight px-7 py-[14px] rounded-lg no-underline transition-all duration-200"
                 style={{
                   background: 'transparent',
@@ -137,7 +140,7 @@ export function Hero({ showUrgency = true }: { showUrgency?: boolean }) {
                   ;(e.currentTarget as HTMLAnchorElement).style.background = 'transparent'
                 }}
               >
-                Ver servicios →
+                Ver casos reales →
               </a>
             </div>
 
@@ -147,7 +150,7 @@ export function Hero({ showUrgency = true }: { showUrgency?: boolean }) {
                   <div className="font-head font-bold text-[20px] sm:text-[22px] text-text">
                     {value}
                   </div>
-                  <div className="text-[12px] text-muted mt-0.5" style={{ maxWidth: 120 }}>
+                  <div className="text-[12px] text-muted mt-0.5" style={{ maxWidth: 140 }}>
                     {label}
                   </div>
                 </div>
@@ -156,7 +159,6 @@ export function Hero({ showUrgency = true }: { showUrgency?: boolean }) {
           </FadeIn>
         </div>
 
-        {/* Right — Founder card (below text on mobile, side on desktop) */}
         <FadeIn delay={0.2} className="w-full max-w-[320px] mx-auto lg:mx-0 lg:flex-shrink-0 lg:w-[300px]">
           <FounderCard />
         </FadeIn>
@@ -177,7 +179,6 @@ function FounderCard() {
           boxShadow: '0 40px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(39,42,58,0.4)',
         }}
       >
-        {/* Accent glow */}
         <div
           className="absolute pointer-events-none"
           style={{
@@ -189,7 +190,6 @@ function FounderCard() {
           }}
         />
 
-        {/* Photo */}
         <div className="relative overflow-hidden">
           <Image
             src="/founder.png"
@@ -206,7 +206,6 @@ function FounderCard() {
           />
         </div>
 
-        {/* Info */}
         <div className="px-6 pb-6 pt-5">
           <div className="font-head font-bold text-[18px] tracking-tight leading-tight">
             Nández García
@@ -236,7 +235,6 @@ function FounderCard() {
         </div>
       </div>
 
-      {/* Social proof */}
       <div className="mt-4 flex items-center gap-2.5 justify-center">
         <div className="flex">
           {AVATARS.map((letter, i) => (

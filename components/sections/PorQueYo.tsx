@@ -24,7 +24,7 @@ const MULTIPLIERS = ['× velocidad', '× eficiencia', '× resultados'] as const
 export function PorQueYo() {
   return (
     <section
-      id="porque"
+      id="porqueyo"
       style={{
         padding: 'clamp(60px,10vw,120px) clamp(20px,5vw,80px)',
         borderTop: '1px solid rgba(39,42,58,0.5)',
@@ -33,7 +33,7 @@ export function PorQueYo() {
       <div className="max-w-[1200px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           <FadeIn>
-            <SectionLabel>Por qué confiar en mí</SectionLabel>
+            <SectionLabel>Mi enfoque</SectionLabel>
             <h2
               className="font-head font-bold tracking-[-0.025em] leading-[1.15] mb-5"
               style={{ fontSize: 'clamp(28px,3.5vw,44px)' }}

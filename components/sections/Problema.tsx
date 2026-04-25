@@ -81,16 +81,6 @@ export function Problema() {
               <br />
               Es trabajar con alguien que entienda todo el proceso.
             </p>
-            <p
-              className="font-head font-bold text-[15px] mt-3"
-              style={{
-                background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              Tecnología. Marketing. Negocio. En una sola persona.
-            </p>
           </div>
         </FadeIn>
       </div>

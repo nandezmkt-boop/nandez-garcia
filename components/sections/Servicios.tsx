@@ -6,6 +6,7 @@ import { SectionLabel } from '@/components/ui/SectionLabel'
 const SERVICES = [
   {
     id: 0,
+    tipo: 'negocio',
     tag: 'Ya tienes un negocio',
     forWho: 'Para negocios que ya existen y necesitan clientes',
     price: 'Desde 490€',
@@ -25,6 +26,7 @@ const SERVICES = [
   },
   {
     id: 1,
+    tipo: 'idea',
     tag: 'Tienes una idea',
     forWho: 'Para personas con una idea que quieren lanzarla',
     price: 'Desde 1.490€',
@@ -45,8 +47,6 @@ const SERVICES = [
 ] as const
 
 export function Servicios() {
-  const [selected, setSelected] = useState(1)
-
   return (
     <section
       id="servicios"
@@ -71,11 +71,7 @@ export function Servicios() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-14 items-stretch">
           {SERVICES.map((s, i) => (
             <FadeIn key={s.id} delay={i * 0.1} className="h-full">
-              <ServiceCard
-                service={s}
-                active={selected === s.id}
-                onSelect={() => setSelected(s.id)}
-              />
+              <ServiceCard service={s} />
             </FadeIn>
           ))}
         </div>
@@ -93,22 +89,17 @@ export function Servicios() {
 
 function ServiceCard({
   service,
-  active,
-  onSelect,
 }: {
   service: (typeof SERVICES)[number]
-  active: boolean
-  onSelect: () => void
 }) {
   const [hovered, setHovered] = useState(false)
-  const on = hovered || active
+  const on = hovered
 
   return (
     <div
-      onClick={onSelect}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative cursor-pointer transition-all duration-[250ms] flex flex-col h-full"
+      className="relative transition-all duration-[250ms] flex flex-col h-full"
       style={{
         borderRadius: 18,
         border: `1px solid ${on ? `${service.color}80` : 'var(--border)'}`,
@@ -132,7 +123,6 @@ function ServiceCard({
         </div>
       )}
 
-      {/* Top content — grows to fill available space */}
       <div className="flex flex-col flex-1">
         <div
           className="text-[11px] font-head font-semibold mb-1.5 tracking-[0.08em] uppercase"
@@ -156,7 +146,6 @@ function ServiceCard({
           {service.result}
         </div>
 
-        {/* Features — flex-1 so this pushes price to bottom */}
         <div className="border-t pt-5 flex-1" style={{ borderColor: 'var(--border)' }}>
           <div className="text-[11px] text-subtle tracking-[0.08em] uppercase font-head font-semibold mb-3">
             Qué incluye
@@ -185,15 +174,13 @@ function ServiceCard({
         </div>
       </div>
 
-      {/* Bottom — always aligned across cards */}
       <div
         className="flex items-center justify-between pt-5 mt-5"
         style={{ borderTop: '1px solid var(--border)' }}
       >
         <span className="font-head font-bold text-[20px]">{service.price}</span>
         <a
-          href="#contacto"
-          onClick={(e) => e.stopPropagation()}
+          href={`/contacto?tipo=${service.tipo}`}
           className="inline-flex items-center gap-1 text-[14px] font-head font-semibold no-underline transition-transform duration-200 hover:translate-x-0.5"
           style={{ color: service.color }}
         >

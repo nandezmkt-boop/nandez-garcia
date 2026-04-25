@@ -5,7 +5,7 @@ import Image from 'next/image'
 const NAV_LINKS = [
   ['Servicios', '/#servicios'],
   ['Cómo funciona', '/#proceso'],
-  ['Mi enfoque', '/#histopias'],
+  ['Mi enfoque', '/#porqueyo'],
   ['Clientes', '/#testimonios'],
 ] as const
 

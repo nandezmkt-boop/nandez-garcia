@@ -10,8 +10,8 @@ export async function POST(req: Request) {
       return Response.json({ error: parsed.error.flatten() }, { status: 400 })
     }
 
-    const { email, mensaje } = parsed.data
-    await sendContactEmail(email, mensaje)
+    const { email, mensaje, tipo } = parsed.data
+    await sendContactEmail(email, mensaje, tipo)
 
     return Response.json({ ok: true })
   } catch {

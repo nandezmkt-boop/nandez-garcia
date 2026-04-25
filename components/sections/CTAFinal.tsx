@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { contactSchema, type ContactInput } from '@/lib/schema'
@@ -8,6 +9,12 @@ import { SectionLabel } from '@/components/ui/SectionLabel'
 import Link from 'next/link'
 
 type FormStatus = 'idle' | 'sending' | 'sent' | 'error'
+
+const TIPO_OPTIONS = [
+  { value: 'negocio', label: 'Una página que capte clientes' },
+  { value: 'idea', label: 'Lanzar una idea' },
+  { value: 'no-claro', label: 'No lo tengo claro aún' },
+] as const
 
 function SubmitButton({ sending }: { sending: boolean }) {
   const [hovered, setHovered] = useState(false)
@@ -28,7 +35,7 @@ function SubmitButton({ sending }: { sending: boolean }) {
   )
 }
 
-// Bloque persuasivo sin formulario — usado en la home. Enlaza a /contacto.
+// Bloque persuasivo condensado — usado en la home. Enlaza a /contacto.
 export function CTAFinalCTA({ showUrgency = true }: { showUrgency?: boolean }) {
   return (
     <section
@@ -47,57 +54,25 @@ export function CTAFinalCTA({ showUrgency = true }: { showUrgency?: boolean }) {
       />
 
       <div className="max-w-[680px] mx-auto relative">
-
         <FadeIn>
-          <div
-            className="mb-12 px-6 py-6 rounded-2xl text-center"
-            style={{
-              background: 'rgba(255,255,255,0.025)',
-              border: '1px solid rgba(255,255,255,0.07)',
-            }}
-          >
-            <p className="text-[15px] leading-[1.8] text-muted mb-4">
-              Puedes seguir con una web que está online pero no hace nada.
-              <br className="hidden sm:block" />
-              O puedes tener algo que trabaje para ti cada día.
-            </p>
-            <div
-              className="text-[14px] leading-[1.7]"
-              style={{ color: 'rgba(240,241,245,0.45)' }}
-            >
-              Si solo buscas algo rápido o lo más barato posible,
-              probablemente no soy para ti.
-              <br />
-              <span style={{ color: 'rgba(240,241,245,0.7)' }}>
-                Si buscas algo que funcione de verdad, entonces sí.
-              </span>
-            </div>
-          </div>
-        </FadeIn>
-
-        <FadeIn delay={0.05}>
-          <div className="text-center mb-14">
+          <div className="text-center">
             <SectionLabel center>Hablemos</SectionLabel>
             <h2
-              className="font-head font-bold tracking-[-0.03em] leading-[1.1] mt-3"
-              style={{ fontSize: 'clamp(30px,4.5vw,54px)' }}
+              className="font-head font-bold tracking-[-0.03em] leading-[1.15] mt-3"
+              style={{ fontSize: 'clamp(28px,4vw,48px)' }}
             >
-              Cuéntame tu caso.
-              <br />
-              En menos de 24h te digo qué haría yo.
+              Cuéntame tu caso. En menos de 24h te digo qué haría yo.
             </h2>
             <p
               className="text-muted text-[17px] leading-[1.75] mt-5"
               style={{ maxWidth: 520, margin: '20px auto 0' }}
             >
-              Solo necesito saber qué quieres conseguir. Te contesto con una
-              propuesta concreta — plazo, coste, cómo lo enfocaría — o te digo
-              honestamente si no soy la persona adecuada.
+              Plazo, coste y enfoque concretos. O un "no encajo" honesto.
             </p>
 
             {showUrgency && (
               <div
-                className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-full"
+                className="inline-flex items-center gap-2 mt-6 px-4 py-2 rounded-full"
                 style={{
                   border: '1px solid rgba(79,124,255,0.3)',
                   background: 'rgba(79,124,255,0.08)',
@@ -111,15 +86,15 @@ export function CTAFinalCTA({ showUrgency = true }: { showUrgency?: boolean }) {
                   className="text-[13px] font-head font-medium"
                   style={{ color: 'var(--accent)' }}
                 >
-                  Respondo en menos de 24h · Disponible este mes
+                  Disponible este mes · Respondo en &lt;24h
                 </span>
               </div>
             )}
           </div>
         </FadeIn>
 
-        <FadeIn delay={0.15}>
-          <div className="text-center">
+        <FadeIn delay={0.1}>
+          <div className="text-center mt-10">
             <Link
               href="/contacto"
               className="inline-flex items-center justify-center gap-2 font-head font-semibold text-[15px] tracking-tight px-7 py-[14px] rounded-lg text-white no-underline transition-all duration-200 hover:-translate-y-0.5"
@@ -136,9 +111,6 @@ export function CTAFinalCTA({ showUrgency = true }: { showUrgency?: boolean }) {
             >
               Cuéntame tu caso →
             </Link>
-            <p className="mt-4 text-center text-[12px] text-subtle leading-[1.7]">
-              Sin spam. Sin compromiso. Sin formularios eternos.
-            </p>
           </div>
         </FadeIn>
       </div>
@@ -148,15 +120,82 @@ export function CTAFinalCTA({ showUrgency = true }: { showUrgency?: boolean }) {
 
 // Formulario completo — usado exclusivamente en /contacto.
 export function CTAFinal({ showUrgency = true }: { showUrgency?: boolean }) {
+  return (
+    <Suspense fallback={<CTAFinalSkeleton showUrgency={showUrgency} />}>
+      <CTAFinalForm showUrgency={showUrgency} />
+    </Suspense>
+  )
+}
+
+function CTAFinalSkeleton({ showUrgency }: { showUrgency: boolean }) {
+  return (
+    <section
+      id="contacto"
+      className="relative"
+      style={{
+        padding: 'clamp(60px,10vw,120px) clamp(20px,5vw,80px)',
+        borderTop: '1px solid rgba(39,42,58,0.5)',
+      }}
+    >
+      <div className="max-w-[680px] mx-auto relative">
+        <div className="text-center mb-10">
+          <h1
+            className="font-head font-bold tracking-[-0.03em] leading-[1.1]"
+            style={{ fontSize: 'clamp(30px,4.5vw,54px)' }}
+          >
+            Cuéntame tu caso.
+          </h1>
+          <p className="text-muted text-[16px] leading-[1.75] mt-4">
+            Email + 2 líneas. Te respondo en &lt;24h con qué haría yo.
+          </p>
+          {showUrgency && (
+            <div
+              className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-full"
+              style={{
+                border: '1px solid rgba(79,124,255,0.3)',
+                background: 'rgba(79,124,255,0.08)',
+              }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full block flex-shrink-0 pulse-dot"
+                style={{ background: 'var(--accent)' }}
+              />
+              <span
+                className="text-[13px] font-head font-medium"
+                style={{ color: 'var(--accent)' }}
+              >
+                Respondo en menos de 24h · Disponible este mes
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function CTAFinalForm({ showUrgency }: { showUrgency: boolean }) {
   const [status, setStatus] = useState<FormStatus>('idle')
+  const searchParams = useSearchParams()
+  const tipoFromUrl = searchParams.get('tipo')
+  const initialTipo =
+    tipoFromUrl === 'negocio' || tipoFromUrl === 'idea' || tipoFromUrl === 'no-claro'
+      ? tipoFromUrl
+      : undefined
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<ContactInput>({
     resolver: zodResolver(contactSchema),
+    defaultValues: { tipo: initialTipo },
   })
+
+  useEffect(() => {
+    if (initialTipo) setValue('tipo', initialTipo)
+  }, [initialTipo, setValue])
 
   const onSubmit = async (data: ContactInput) => {
     setStatus('sending')
@@ -194,52 +233,16 @@ export function CTAFinal({ showUrgency = true }: { showUrgency?: boolean }) {
       />
 
       <div className="max-w-[680px] mx-auto relative">
-
         <FadeIn>
-          <div
-            className="mb-12 px-6 py-6 rounded-2xl text-center"
-            style={{
-              background: 'rgba(255,255,255,0.025)',
-              border: '1px solid rgba(255,255,255,0.07)',
-            }}
-          >
-            <p className="text-[15px] leading-[1.8] text-muted mb-4">
-              Puedes seguir con una web que está online pero no hace nada.
-              <br className="hidden sm:block" />
-              O puedes tener algo que trabaje para ti cada día.
-            </p>
-            <div
-              className="text-[14px] leading-[1.7]"
-              style={{ color: 'rgba(240,241,245,0.45)' }}
-            >
-              Si solo buscas algo rápido o lo más barato posible,
-              probablemente no soy para ti.
-              <br />
-              <span style={{ color: 'rgba(240,241,245,0.7)' }}>
-                Si buscas algo que funcione de verdad, entonces sí.
-              </span>
-            </div>
-          </div>
-        </FadeIn>
-
-        <FadeIn delay={0.05}>
-          <div className="text-center mb-14">
-            <SectionLabel center>Hablemos</SectionLabel>
-            <h2
-              className="font-head font-bold tracking-[-0.03em] leading-[1.1] mt-3"
+          <div className="text-center mb-10">
+            <h1
+              className="font-head font-bold tracking-[-0.03em] leading-[1.1]"
               style={{ fontSize: 'clamp(30px,4.5vw,54px)' }}
             >
               Cuéntame tu caso.
-              <br />
-              En menos de 24h te digo qué haría yo.
-            </h2>
-            <p
-              className="text-muted text-[17px] leading-[1.75] mt-5"
-              style={{ maxWidth: 520, margin: '20px auto 0' }}
-            >
-              Solo necesito saber qué quieres conseguir. Te contesto con una
-              propuesta concreta — plazo, coste, cómo lo enfocaría — o te digo
-              honestamente si no soy la persona adecuada.
+            </h1>
+            <p className="text-muted text-[16px] leading-[1.75] mt-4">
+              Email + 2 líneas. Te respondo en &lt;24h con qué haría yo.
             </p>
 
             {showUrgency && (
@@ -265,7 +268,7 @@ export function CTAFinal({ showUrgency = true }: { showUrgency?: boolean }) {
           </div>
         </FadeIn>
 
-        <FadeIn delay={0.15}>
+        <FadeIn delay={0.1}>
           {status === 'sent' ? (
             <div
               className="text-center py-[60px] px-10 rounded-[20px]"
@@ -286,11 +289,18 @@ export function CTAFinal({ showUrgency = true }: { showUrgency?: boolean }) {
               <h3 className="font-head font-bold text-[22px] mb-3">
                 Mensaje recibido.
               </h3>
-              <p className="text-muted text-[15px] leading-[1.7]">
+              <p className="text-muted text-[15px] leading-[1.7] mb-6">
                 Te leo con calma y te escribo en menos de 24 horas con lo que
                 haría yo en tu caso. Revisa también la carpeta de spam por si
                 acaso.
               </p>
+              <Link
+                href="/#testimonios"
+                className="inline-flex items-center gap-1 text-[14px] font-head font-semibold no-underline transition-transform duration-200 hover:translate-x-0.5"
+                style={{ color: 'var(--accent)' }}
+              >
+                Mientras tanto, mira casos reales →
+              </Link>
             </div>
           ) : (
             <form
@@ -302,6 +312,30 @@ export function CTAFinal({ showUrgency = true }: { showUrgency?: boolean }) {
                 padding: 'clamp(28px,5vw,48px)',
               }}
             >
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-head font-semibold text-text">
+                  ¿Qué necesitas?{' '}
+                  <span className="text-subtle font-normal">(opcional)</span>
+                </label>
+                <div className="flex flex-col gap-2 mt-1">
+                  {TIPO_OPTIONS.map((opt) => (
+                    <label
+                      key={opt.value}
+                      className="flex items-center gap-3 cursor-pointer text-[14px] text-muted hover:text-text transition-colors"
+                    >
+                      <input
+                        type="radio"
+                        value={opt.value}
+                        {...register('tipo')}
+                        className="accent-accent"
+                        style={{ accentColor: 'var(--accent)' }}
+                      />
+                      {opt.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex flex-col gap-2">
                 <label className="text-[13px] font-head font-semibold text-text">
                   Tu email
@@ -321,9 +355,13 @@ export function CTAFinal({ showUrgency = true }: { showUrgency?: boolean }) {
                       : 'var(--border)')
                   }
                 />
-                {errors.email && (
+                {errors.email ? (
                   <p className="text-[12px]" style={{ color: '#ff6b6b' }}>
                     {errors.email.message}
+                  </p>
+                ) : (
+                  <p className="text-[12px] text-subtle">
+                    Solo lo uso para responderte. Sin newsletter.
                   </p>
                 )}
               </div>
@@ -363,8 +401,7 @@ export function CTAFinal({ showUrgency = true }: { showUrgency?: boolean }) {
               <SubmitButton sending={status === 'sending'} />
 
               <p className="text-center text-[12px] text-subtle leading-[1.7]">
-                Sin spam. Sin compromiso. Sin formularios eternos.<br />
-                Solo una respuesta directa con lo que yo haría en tu caso.
+                Sin spam. Sin compromiso. Sin formularios eternos.
               </p>
             </form>
           )}
