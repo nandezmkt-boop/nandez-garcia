@@ -3,10 +3,10 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 
 const NAV_LINKS = [
-  ['Servicios', '#servicios'],
-  ['Cómo funciona', '#proceso'],
-  ['Mi enfoque', '#histopias'],
-  ['Clientes', '#testimonios'],
+  ['Servicios', '/#servicios'],
+  ['Cómo funciona', '/#proceso'],
+  ['Mi enfoque', '/#histopias'],
+  ['Clientes', '/#testimonios'],
 ] as const
 
 /* ─── Circular logo wrapper (reutilizable) ─────────────────────────── */
@@ -67,7 +67,7 @@ export function Navbar() {
     >
       <div className="max-w-[1200px] mx-auto flex items-center justify-between h-16">
         {/* Brand */}
-        <a href="#" onClick={closeMenu} className="flex items-center gap-2.5 no-underline">
+        <a href="/" onClick={closeMenu} className="flex items-center gap-2.5 no-underline">
           <LogoBadge size={30} />
           <div>
             <span className="font-head font-bold text-[15px] tracking-tight text-text">
@@ -91,7 +91,7 @@ export function Navbar() {
             </a>
           ))}
           <a
-            href="#contacto"
+            href="/contacto"
             className="inline-flex items-center gap-2 px-[18px] py-[9px] rounded-lg font-head font-semibold text-[13px] text-white transition-all duration-200 no-underline"
             style={{ background: 'var(--accent)' }}
             onMouseEnter={(e) => {
@@ -154,7 +154,7 @@ export function Navbar() {
           ))}
           <div className="py-4">
             <a
-              href="#contacto"
+              href="/contacto"
               onClick={closeMenu}
               className="flex items-center justify-center w-full font-head font-semibold text-[15px] px-7 py-[14px] rounded-lg text-white no-underline"
               style={{ background: 'var(--accent)' }}
