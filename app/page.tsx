@@ -8,7 +8,7 @@ import { Servicios } from '@/components/sections/Servicios'
 import { Proceso } from '@/components/sections/Proceso'
 import { PorQueYo } from '@/components/sections/PorQueYo'
 import { Testimonios } from '@/components/sections/Testimonios'
-import { CTAFinal } from '@/components/sections/CTAFinal'
+import { CTAFinalCTA } from '@/components/sections/CTAFinal'
 
 export default function Home() {
   return (
@@ -23,7 +23,7 @@ export default function Home() {
         <Proceso />
         <PorQueYo />
         <Testimonios />
-        <CTAFinal showUrgency />
+        <CTAFinalCTA showUrgency />
       </main>
       <Footer />
     </>

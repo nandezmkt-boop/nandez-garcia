@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { contactSchema, type ContactInput } from '@/lib/schema'
 import { FadeIn } from '@/components/ui/FadeIn'
 import { SectionLabel } from '@/components/ui/SectionLabel'
+import Link from 'next/link'
 
 type FormStatus = 'idle' | 'sending' | 'sent' | 'error'
 
@@ -27,6 +28,125 @@ function SubmitButton({ sending }: { sending: boolean }) {
   )
 }
 
+// Bloque persuasivo sin formulario — usado en la home. Enlaza a /contacto.
+export function CTAFinalCTA({ showUrgency = true }: { showUrgency?: boolean }) {
+  return (
+    <section
+      className="relative"
+      style={{
+        padding: 'clamp(60px,10vw,120px) clamp(20px,5vw,80px)',
+        borderTop: '1px solid rgba(39,42,58,0.5)',
+      }}
+    >
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(180deg, transparent 0%, rgba(79,124,255,0.04) 50%, transparent 100%)',
+        }}
+      />
+
+      <div className="max-w-[680px] mx-auto relative">
+
+        <FadeIn>
+          <div
+            className="mb-12 px-6 py-6 rounded-2xl text-center"
+            style={{
+              background: 'rgba(255,255,255,0.025)',
+              border: '1px solid rgba(255,255,255,0.07)',
+            }}
+          >
+            <p className="text-[15px] leading-[1.8] text-muted mb-4">
+              Puedes seguir con una web que está online pero no hace nada.
+              <br className="hidden sm:block" />
+              O puedes tener algo que trabaje para ti cada día.
+            </p>
+            <div
+              className="text-[14px] leading-[1.7]"
+              style={{ color: 'rgba(240,241,245,0.45)' }}
+            >
+              Si solo buscas algo rápido o lo más barato posible,
+              probablemente no soy para ti.
+              <br />
+              <span style={{ color: 'rgba(240,241,245,0.7)' }}>
+                Si buscas algo que funcione de verdad, entonces sí.
+              </span>
+            </div>
+          </div>
+        </FadeIn>
+
+        <FadeIn delay={0.05}>
+          <div className="text-center mb-14">
+            <SectionLabel center>Hablemos</SectionLabel>
+            <h2
+              className="font-head font-bold tracking-[-0.03em] leading-[1.1] mt-3"
+              style={{ fontSize: 'clamp(30px,4.5vw,54px)' }}
+            >
+              Cuéntame tu caso.
+              <br />
+              En menos de 24h te digo qué haría yo.
+            </h2>
+            <p
+              className="text-muted text-[17px] leading-[1.75] mt-5"
+              style={{ maxWidth: 520, margin: '20px auto 0' }}
+            >
+              Solo necesito saber qué quieres conseguir. Te contesto con una
+              propuesta concreta — plazo, coste, cómo lo enfocaría — o te digo
+              honestamente si no soy la persona adecuada.
+            </p>
+
+            {showUrgency && (
+              <div
+                className="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-full"
+                style={{
+                  border: '1px solid rgba(79,124,255,0.3)',
+                  background: 'rgba(79,124,255,0.08)',
+                }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full block flex-shrink-0 pulse-dot"
+                  style={{ background: 'var(--accent)' }}
+                />
+                <span
+                  className="text-[13px] font-head font-medium"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  Respondo en menos de 24h · Disponible este mes
+                </span>
+              </div>
+            )}
+          </div>
+        </FadeIn>
+
+        <FadeIn delay={0.15}>
+          <div className="text-center">
+            <Link
+              href="/contacto"
+              className="inline-flex items-center justify-center gap-2 font-head font-semibold text-[15px] tracking-tight px-7 py-[14px] rounded-lg text-white no-underline transition-all duration-200 hover:-translate-y-0.5"
+              style={{ background: 'var(--accent)' }}
+              onMouseEnter={(e) => {
+                ;(e.currentTarget as HTMLAnchorElement).style.background = '#6690ff'
+                ;(e.currentTarget as HTMLAnchorElement).style.boxShadow =
+                  '0 10px 32px rgba(79,124,255,0.45)'
+              }}
+              onMouseLeave={(e) => {
+                ;(e.currentTarget as HTMLAnchorElement).style.background = 'var(--accent)'
+                ;(e.currentTarget as HTMLAnchorElement).style.boxShadow = 'none'
+              }}
+            >
+              Cuéntame tu caso →
+            </Link>
+            <p className="mt-4 text-center text-[12px] text-subtle leading-[1.7]">
+              Sin spam. Sin compromiso. Sin formularios eternos.
+            </p>
+          </div>
+        </FadeIn>
+      </div>
+    </section>
+  )
+}
+
+// Formulario completo — usado exclusivamente en /contacto.
 export function CTAFinal({ showUrgency = true }: { showUrgency?: boolean }) {
   const [status, setStatus] = useState<FormStatus>('idle')
 
@@ -75,7 +195,6 @@ export function CTAFinal({ showUrgency = true }: { showUrgency?: boolean }) {
 
       <div className="max-w-[680px] mx-auto relative">
 
-        {/* Tension block */}
         <FadeIn>
           <div
             className="mb-12 px-6 py-6 rounded-2xl text-center"

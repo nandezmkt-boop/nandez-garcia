@@ -104,7 +104,7 @@ export function Hero({ showUrgency = true }: { showUrgency?: boolean }) {
           <FadeIn delay={0.1}>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-3.5 mb-10 sm:mb-12">
               <a
-                href="#contacto"
+                href="/contacto"
                 className="inline-flex items-center justify-center gap-2 font-head font-semibold text-[15px] tracking-tight px-7 py-[14px] rounded-lg text-white no-underline transition-all duration-200 hover:-translate-y-0.5"
                 style={{ background: 'var(--accent)' }}
                 onMouseEnter={(e) => {
