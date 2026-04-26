@@ -1,6 +1,8 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null
 
 const TIPO_LABELS: Record<string, string> = {
   negocio: 'Una página que capte clientes',
@@ -13,6 +15,8 @@ export async function sendContactEmail(
   mensaje: string,
   tipo?: string,
 ) {
+  if (!resend) return
+
   const tipoLabel = tipo ? TIPO_LABELS[tipo] ?? tipo : null
 
   return resend.emails.send({
