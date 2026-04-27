@@ -8,13 +8,16 @@ datasource db {
 }
 
 model Lead {
-  id        String   @id @default(cuid())
-  email     String
-  mensaje   String
-  tipo      String?
-  status    String   @default("new")
-  source    String   @default("landing")
-  createdAt DateTime @default(now())
+  id             String    @id @default(cuid())
+  email          String
+  mensaje        String
+  tipo           String?
+  status         String    @default("new")
+  source         String    @default("landing")
+  createdAt      DateTime  @default(now())
+  aiResponse     String?
+  aiResponseAt   DateTime?
+  aiError        String?
 }
 
 enum EventType {

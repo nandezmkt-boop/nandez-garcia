@@ -9,6 +9,9 @@ export type LeadRow = {
   status: string
   source: string
   createdAt: string
+  aiResponse: string | null
+  aiResponseAt: string | null
+  aiError: string | null
 }
 
 type SortDir = 'desc' | 'asc'
@@ -103,6 +106,116 @@ function StatusSelect({
   )
 }
 
+function AiResponsePanel({
+  lead,
+  isGenerating,
+  isCopied,
+  onGenerate,
+  onCopy,
+}: {
+  lead: LeadRow
+  isGenerating: boolean
+  isCopied: boolean
+  onGenerate: (id: string, force?: boolean) => void
+  onCopy: (id: string, text: string) => void
+}) {
+  const hasResponse = !!lead.aiResponse
+  const hasError    = !!lead.aiError && !hasResponse
+
+  return (
+    <div
+      onClick={e => e.stopPropagation()}
+      style={{
+        padding: '14px 16px 16px',
+        borderTop: '1px dashed var(--border)',
+        background: 'var(--bg)',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent2)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+          Respuesta IA
+        </div>
+        {lead.aiResponseAt && (
+          <div style={{ fontSize: 11, color: 'var(--subtle)' }}>
+            generada {new Date(lead.aiResponseAt).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+          </div>
+        )}
+        <div style={{ flex: 1 }} />
+        {hasResponse && (
+          <button
+            onClick={() => onCopy(lead.id, lead.aiResponse!)}
+            style={{
+              ...btn,
+              padding: '5px 10px',
+              fontSize: 11,
+              color: isCopied ? '#10b981' : 'var(--text)',
+            }}
+          >
+            {isCopied ? 'Copiado ✓' : 'Copiar'}
+          </button>
+        )}
+        <button
+          onClick={() => onGenerate(lead.id, hasResponse)}
+          disabled={isGenerating}
+          style={{
+            ...btn,
+            padding: '5px 10px',
+            fontSize: 11,
+            opacity: isGenerating ? 0.6 : 1,
+            cursor: isGenerating ? 'wait' : 'pointer',
+            color: 'var(--accent)',
+            borderColor: 'var(--accent)',
+          }}
+        >
+          {isGenerating
+            ? 'Generando…'
+            : hasResponse
+            ? 'Regenerar'
+            : 'Generar respuesta'}
+        </button>
+      </div>
+
+      {hasResponse && (
+        <div
+          style={{
+            background: 'var(--bg2)',
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            padding: '12px 14px',
+            fontSize: 13,
+            color: 'var(--text)',
+            lineHeight: 1.55,
+            whiteSpace: 'pre-wrap',
+          }}
+        >
+          {lead.aiResponse}
+        </div>
+      )}
+
+      {!hasResponse && !hasError && !isGenerating && (
+        <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+          Aún no se ha generado una respuesta para este lead.
+        </div>
+      )}
+
+      {hasError && (
+        <div
+          style={{
+            background: 'rgba(239,68,68,0.08)',
+            border: '1px solid rgba(239,68,68,0.4)',
+            borderRadius: 8,
+            padding: '10px 12px',
+            fontSize: 12,
+            color: '#ef4444',
+          }}
+        >
+          Error al generar: {lead.aiError}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function TipoBadge({ tipo }: { tipo: string | null }) {
   if (!tipo) return <span style={{ color: 'var(--subtle)', fontSize: 12 }}>—</span>
   return (
@@ -133,6 +246,8 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
   const [errorId, setErrorId]           = useState<string | null>(null)
   const [hoveredId, setHoveredId]       = useState<string | null>(null)
   const [expanded, setExpanded]         = useState<string | null>(null)
+  const [generatingId, setGeneratingId] = useState<string | null>(null)
+  const [copiedId, setCopiedId]         = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     let r = [...leads]
@@ -148,6 +263,44 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
     })
     return r
   }, [leads, search, filterTipo, filterStatus, sortDir])
+
+  async function generateAi(id: string, force = false) {
+    console.log('[leads] generateAi called', id, { force })
+    setGeneratingId(id)
+    try {
+      const res = await fetch(`/api/leads/${id}/generate-response${force ? '?force=1' : ''}`, {
+        method: 'POST',
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data.response) {
+        setLeads(prev => prev.map(l =>
+          l.id === id
+            ? { ...l, aiResponse: data.response, aiResponseAt: new Date().toISOString(), aiError: null }
+            : l
+        ))
+      } else {
+        const message = data.error ?? `HTTP ${res.status}`
+        console.error('[leads] generateAi failed:', message)
+        setLeads(prev => prev.map(l => l.id === id ? { ...l, aiError: message } : l))
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      console.error('[leads] generateAi error:', message)
+      setLeads(prev => prev.map(l => l.id === id ? { ...l, aiError: message } : l))
+    } finally {
+      setGeneratingId(null)
+    }
+  }
+
+  async function copyToClipboard(id: string, text: string) {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(c => c === id ? null : c), 1600)
+    } catch (err) {
+      console.error('[leads] clipboard error:', err)
+    }
+  }
 
 async function updateStatus(id: string, status: Status) {
   console.log('[leads] updateStatus called', id, status)
@@ -288,10 +441,12 @@ async function updateStatus(id: string, status: Status) {
 
             {/* Rows */}
             {filtered.map((lead, i) => {
-              const isExpanded = expanded === lead.id
-              const isHovered  = hoveredId === lead.id
-              const isUpdating = updatingId === lead.id
-              const isError    = errorId === lead.id
+              const isExpanded   = expanded === lead.id
+              const isHovered    = hoveredId === lead.id
+              const isUpdating   = updatingId === lead.id
+              const isError      = errorId === lead.id
+              const isGenerating = generatingId === lead.id
+              const isCopied     = copiedId === lead.id
 
               return (
                 <div
@@ -341,6 +496,16 @@ async function updateStatus(id: string, status: Status) {
                       </span>
                     </div>
                   </div>
+
+                  {isExpanded && (
+                    <AiResponsePanel
+                      lead={lead}
+                      isGenerating={isGenerating}
+                      isCopied={isCopied}
+                      onGenerate={generateAi}
+                      onCopy={copyToClipboard}
+                    />
+                  )}
                 </div>
               )
             })}
@@ -349,9 +514,11 @@ async function updateStatus(id: string, status: Status) {
           {/* ── Mobile cards ── */}
           <div className="admin-table-mobile">
             {filtered.map(lead => {
-              const isExpanded = expanded === lead.id
-              const isUpdating = updatingId === lead.id
-              const isError    = errorId === lead.id
+              const isExpanded   = expanded === lead.id
+              const isUpdating   = updatingId === lead.id
+              const isError      = errorId === lead.id
+              const isGenerating = generatingId === lead.id
+              const isCopied     = copiedId === lead.id
 
               return (
                 <div
@@ -400,6 +567,18 @@ async function updateStatus(id: string, status: Status) {
                     <TipoBadge tipo={lead.tipo} />
                     <StatusSelect lead={lead} isUpdating={isUpdating} isError={isError} onUpdate={updateStatus} />
                   </div>
+
+                  {isExpanded && (
+                    <div style={{ marginTop: 12, marginLeft: -16, marginRight: -16, marginBottom: -16 }}>
+                      <AiResponsePanel
+                        lead={lead}
+                        isGenerating={isGenerating}
+                        isCopied={isCopied}
+                        onGenerate={generateAi}
+                        onCopy={copyToClipboard}
+                      />
+                    </div>
+                  )}
                 </div>
               )
             })}

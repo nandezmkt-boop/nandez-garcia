@@ -10,8 +10,16 @@ export default async function LeadsPage() {
 
   // Serialize dates before passing to client component
   const leads: LeadRow[] = raw.map(l => ({
-    ...l,
+    id: l.id,
+    email: l.email,
+    mensaje: l.mensaje,
+    tipo: l.tipo,
+    status: l.status,
+    source: l.source,
     createdAt: l.createdAt.toISOString(),
+    aiResponse: l.aiResponse,
+    aiResponseAt: l.aiResponseAt ? l.aiResponseAt.toISOString() : null,
+    aiError: l.aiError,
   }))
 
   const newCount       = leads.filter(l => l.status === 'new').length
