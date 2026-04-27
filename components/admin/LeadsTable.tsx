@@ -51,10 +51,12 @@ const btn: React.CSSProperties = {
 function StatusSelect({
   lead,
   isUpdating,
+  isError,
   onUpdate,
 }: {
   lead: LeadRow
   isUpdating: boolean
+  isError: boolean
   onUpdate: (id: string, status: Status) => void
 }) {
   const cfg = STATUS_CONFIG[lead.status as Status] ?? STATUS_CONFIG.new
@@ -63,13 +65,14 @@ function StatusSelect({
       value={lead.status}
       onChange={e => onUpdate(lead.id, e.target.value as Status)}
       disabled={isUpdating}
+      title={isError ? 'Error al actualizar — revisa la consola' : undefined}
       style={{
         fontSize: 11,
         padding: '4px 8px',
         borderRadius: 6,
-        background: cfg.bg,
-        border: `1px solid ${cfg.color}40`,
-        color: cfg.color,
+        background: isError ? 'rgba(239,68,68,0.1)' : cfg.bg,
+        border: isError ? '1px solid rgba(239,68,68,0.6)' : `1px solid ${cfg.color}40`,
+        color: isError ? '#ef4444' : cfg.color,
         cursor: isUpdating ? 'wait' : 'pointer',
         outline: 'none',
         fontWeight: 600,
@@ -111,6 +114,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
   const [filterStatus, setFilterStatus] = useState('all')
   const [sortDir, setSortDir]           = useState<SortDir>('desc')
   const [updatingId, setUpdatingId]     = useState<string | null>(null)
+  const [errorId, setErrorId]           = useState<string | null>(null)
   const [hoveredId, setHoveredId]       = useState<string | null>(null)
   const [expanded, setExpanded]         = useState<string | null>(null)
 
@@ -131,6 +135,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
 
   async function updateStatus(id: string, status: Status) {
     setUpdatingId(id)
+    setErrorId(null)
     try {
       const res = await fetch(`/api/leads/${id}`, {
         method: 'PATCH',
@@ -139,7 +144,14 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
       })
       if (res.ok) {
         setLeads(prev => prev.map(l => l.id === id ? { ...l, status } : l))
+      } else {
+        const body = await res.text()
+        console.error('[leads] PATCH failed:', res.status, body)
+        setErrorId(id)
       }
+    } catch (err) {
+      console.error('[leads] PATCH error:', err)
+      setErrorId(id)
     } finally {
       setUpdatingId(null)
     }
@@ -252,6 +264,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
               const isExpanded = expanded === lead.id
               const isHovered  = hoveredId === lead.id
               const isUpdating = updatingId === lead.id
+              const isError    = errorId === lead.id
 
               return (
                 <div
@@ -288,7 +301,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
                       <TipoBadge tipo={lead.tipo} />
                     </div>
                     <div onClick={e => e.stopPropagation()}>
-                      <StatusSelect lead={lead} isUpdating={isUpdating} onUpdate={updateStatus} />
+                      <StatusSelect lead={lead} isUpdating={isUpdating} isError={isError} onUpdate={updateStatus} />
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--subtle)', lineHeight: 1.4 }}>
                       {new Date(lead.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' })}
@@ -308,6 +321,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
             {filtered.map(lead => {
               const isExpanded = expanded === lead.id
               const isUpdating = updatingId === lead.id
+              const isError    = errorId === lead.id
 
               return (
                 <div
@@ -351,7 +365,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
                     onClick={e => e.stopPropagation()}
                   >
                     <TipoBadge tipo={lead.tipo} />
-                    <StatusSelect lead={lead} isUpdating={isUpdating} onUpdate={updateStatus} />
+                    <StatusSelect lead={lead} isUpdating={isUpdating} isError={isError} onUpdate={updateStatus} />
                   </div>
                 </div>
               )
