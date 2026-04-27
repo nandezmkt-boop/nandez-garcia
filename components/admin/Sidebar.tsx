@@ -27,6 +27,58 @@ const NAV = [
   },
 ] as const
 
+function LogoutButton() {
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    window.location.href = '/admin/login'
+  }
+
+  return (
+    <button
+      onClick={handleLogout}
+      style={{
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '8px 10px',
+        borderRadius: 8,
+        fontSize: 12,
+        color: 'var(--subtle)',
+        background: 'transparent',
+        border: '1px solid transparent',
+        cursor: 'pointer',
+        textAlign: 'left',
+        transition: 'all 0.15s',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.color = '#ef4444'
+        e.currentTarget.style.background = 'rgba(239,68,68,0.06)'
+        e.currentTarget.style.borderColor = 'rgba(239,68,68,0.15)'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.color = 'var(--subtle)'
+        e.currentTarget.style.background = 'transparent'
+        e.currentTarget.style.borderColor = 'transparent'
+      }}
+    >
+      <svg width="13" height="13" viewBox="0 0 15 15" fill="none">
+        <path
+          d="M3 1h6a1 1 0 011 1v2h-1V2H3v11h6v-2h1v2a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z"
+          fill="currentColor"
+        />
+        <path
+          d="M10.5 10l2.5-2.5L10.5 5M13 7.5H6"
+          stroke="currentColor"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
+      </svg>
+      Cerrar sesión
+    </button>
+  )
+}
+
 export function Sidebar() {
   const pathname = usePathname()
 
@@ -129,14 +181,9 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
+      {/* Footer / Logout */}
       <div style={{ padding: '16px 8px 0', borderTop: '1px solid var(--border)' }}>
-        <div style={{ fontSize: 11, color: 'var(--subtle)', lineHeight: 1.6 }}>
-          Solo tú tienes acceso
-        </div>
-        <div style={{ fontSize: 10, color: 'var(--subtle)', opacity: 0.6, marginTop: 2 }}>
-          Auth próximamente
-        </div>
+        <LogoutButton />
       </div>
     </aside>
   )

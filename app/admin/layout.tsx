@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import { Sidebar } from '@/components/admin/Sidebar'
 
 export const metadata = {
@@ -6,6 +7,13 @@ export const metadata = {
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = cookies().has('admin-auth')
+
+  // Login page: sin sidebar ni chrome de admin
+  if (!isAuthenticated) {
+    return <>{children}</>
+  }
+
   return (
     <div
       style={{
