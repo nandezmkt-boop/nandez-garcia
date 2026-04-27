@@ -1,5 +1,15 @@
 const TELEGRAM_API = 'https://api.telegram.org'
 
+// Must be applied to any user-supplied string inserted into an HTML-formatted
+// Telegram message. The Telegram HTML parser rejects messages containing
+// unescaped &, < or > and returns 400 silently from our catch block.
+export function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
 export async function sendTelegramMessage(text: string): Promise<void> {
   const token  = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.TELEGRAM_CHAT_ID

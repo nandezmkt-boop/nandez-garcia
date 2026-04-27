@@ -1,5 +1,5 @@
 import { createEvent, EventType } from './events'
-import { sendTelegramMessage } from './telegram'
+import { sendTelegramMessage, escapeHtml } from './telegram'
 
 type LeadSnapshot = {
   id: string
@@ -23,6 +23,7 @@ const TIPO_LABELS: Record<string, string> = {
 }
 
 function statusLabel(s: string) { return STATUS_LABELS[s] ?? s }
+// tipoLabel result may fall back to raw user input → must be escaped at call site
 function tipoLabel(t: string | null | undefined) { return t ? (TIPO_LABELS[t] ?? t) : 'Sin definir' }
 function truncate(s: string, n = 200) { return s.length > n ? s.slice(0, n) + '…' : s }
 
@@ -44,14 +45,13 @@ export async function trackLeadCreated(lead: LeadSnapshot): Promise<void> {
   const lines = [
     '🆕 <b>Nuevo lead</b>',
     '',
-    `📧 <b>Email:</b> ${lead.email}`,
-    `📌 <b>Tipo:</b> ${tipoLabel(lead.tipo)}`,
+    `📧 <b>Email:</b> ${escapeHtml(lead.email)}`,
+    `📌 <b>Tipo:</b> ${escapeHtml(tipoLabel(lead.tipo))}`,
   ]
   if (lead.mensaje) {
-    lines.push(`💬 <b>Mensaje:</b> ${truncate(lead.mensaje)}`)
+    lines.push(`💬 <b>Mensaje:</b> ${escapeHtml(truncate(lead.mensaje))}`)
   }
 
-  // Awaited so the serverless function doesn't exit before the HTTP call completes.
   await sendTelegramMessage(lines.join('\n'))
 }
 
@@ -77,11 +77,10 @@ export async function trackLeadStatusChanged(
   const text = [
     '🔄 <b>Lead actualizado</b>',
     '',
-    `📧 <b>Email:</b> ${lead.email}`,
+    `📧 <b>Email:</b> ${escapeHtml(lead.email)}`,
     `📊 <b>Estado anterior:</b> ${statusLabel(previousStatus)}`,
     `✅ <b>Nuevo estado:</b> ${statusLabel(lead.status)}`,
   ].join('\n')
 
-  // Awaited so the serverless function doesn't exit before the HTTP call completes.
   await sendTelegramMessage(text)
 }
