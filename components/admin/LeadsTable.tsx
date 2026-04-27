@@ -65,6 +65,8 @@ function StatusSelect({
   useEffect(() => { setLocalValue(lead.status as Status) }, [lead.status])
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+  console.log("🔥 CAMBIO DETECTADO", lead.id, e.target.value)
+
     e.stopPropagation()
     const newStatus = e.target.value as Status
     setLocalValue(newStatus)
