@@ -134,6 +134,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
   }, [leads, search, filterTipo, filterStatus, sortDir])
 
   async function updateStatus(id: string, status: Status) {
+    console.log('[leads] updateStatus called', id, status)
     setUpdatingId(id)
     setErrorId(null)
     try {
@@ -285,7 +286,10 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
                       alignItems: 'start',
                       cursor: 'pointer',
                     }}
-                    onClick={() => setExpanded(isExpanded ? null : lead.id)}
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).tagName === 'SELECT') return
+                      setExpanded(isExpanded ? null : lead.id)
+                    }}
                   >
                     <div style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 500, paddingRight: 12, wordBreak: 'break-all', lineHeight: 1.4 }}>
                       {lead.email}
@@ -334,7 +338,10 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
                     cursor: 'pointer',
                     transition: 'border-color 0.15s',
                   }}
-                  onClick={() => setExpanded(isExpanded ? null : lead.id)}
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).tagName === 'SELECT') return
+                    setExpanded(isExpanded ? null : lead.id)
+                  }}
                 >
                   {/* Email + date */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
