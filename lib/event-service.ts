@@ -75,7 +75,7 @@ export async function trackLeadStatusChanged(
   })
 
   const text = [
-    '\u{1F504} <b>Lead actualizado</b>',
+    '<b>Lead actualizado</b>',
     '',
     `📧 <b>Email:</b> ${escapeHtml(lead.email)}`,
     `📊 <b>Estado anterior:</b> ${statusLabel(previousStatus)}`,
