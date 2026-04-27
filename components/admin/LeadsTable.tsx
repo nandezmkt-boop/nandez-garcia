@@ -48,15 +48,71 @@ const btn: React.CSSProperties = {
   whiteSpace: 'nowrap' as const,
 }
 
+function StatusSelect({
+  lead,
+  isUpdating,
+  onUpdate,
+}: {
+  lead: LeadRow
+  isUpdating: boolean
+  onUpdate: (id: string, status: Status) => void
+}) {
+  const cfg = STATUS_CONFIG[lead.status as Status] ?? STATUS_CONFIG.new
+  return (
+    <select
+      value={lead.status}
+      onChange={e => onUpdate(lead.id, e.target.value as Status)}
+      disabled={isUpdating}
+      style={{
+        fontSize: 11,
+        padding: '4px 8px',
+        borderRadius: 6,
+        background: cfg.bg,
+        border: `1px solid ${cfg.color}40`,
+        color: cfg.color,
+        cursor: isUpdating ? 'wait' : 'pointer',
+        outline: 'none',
+        fontWeight: 600,
+        opacity: isUpdating ? 0.6 : 1,
+        transition: 'opacity 0.15s',
+      }}
+    >
+      {(Object.keys(STATUS_CONFIG) as Status[]).map(s => (
+        <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+      ))}
+    </select>
+  )
+}
+
+function TipoBadge({ tipo }: { tipo: string | null }) {
+  if (!tipo) return <span style={{ color: 'var(--subtle)', fontSize: 12 }}>—</span>
+  return (
+    <span
+      style={{
+        fontSize: 11,
+        padding: '3px 8px',
+        borderRadius: 5,
+        background: 'rgba(155,92,255,0.1)',
+        color: 'var(--accent2)',
+        border: '1px solid rgba(155,92,255,0.2)',
+        fontWeight: 500,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {TIPO_LABELS[tipo] ?? tipo}
+    </span>
+  )
+}
+
 export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
-  const [leads, setLeads]           = useState(initialLeads)
-  const [search, setSearch]         = useState('')
-  const [filterTipo, setFilterTipo] = useState('all')
+  const [leads, setLeads]               = useState(initialLeads)
+  const [search, setSearch]             = useState('')
+  const [filterTipo, setFilterTipo]     = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
-  const [sortDir, setSortDir]       = useState<SortDir>('desc')
-  const [updatingId, setUpdatingId] = useState<string | null>(null)
-  const [hoveredId, setHoveredId]   = useState<string | null>(null)
-  const [expanded, setExpanded]     = useState<string | null>(null)
+  const [sortDir, setSortDir]           = useState<SortDir>('desc')
+  const [updatingId, setUpdatingId]     = useState<string | null>(null)
+  const [hoveredId, setHoveredId]       = useState<string | null>(null)
+  const [expanded, setExpanded]         = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     let r = [...leads]
@@ -64,8 +120,8 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
       const q = search.toLowerCase()
       r = r.filter(l => l.email.toLowerCase().includes(q) || l.mensaje.toLowerCase().includes(q))
     }
-    if (filterTipo !== 'all')    r = r.filter(l => l.tipo === filterTipo)
-    if (filterStatus !== 'all')  r = r.filter(l => l.status === filterStatus)
+    if (filterTipo !== 'all')   r = r.filter(l => l.tipo === filterTipo)
+    if (filterStatus !== 'all') r = r.filter(l => l.status === filterStatus)
     r.sort((a, b) => {
       const diff = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       return sortDir === 'desc' ? -diff : diff
@@ -92,17 +148,16 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
   return (
     <div>
       {/* Toolbar */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div
+        className="admin-leads-toolbar"
+        style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}
+      >
         <input
           type="text"
           placeholder="Buscar por email o mensaje…"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{
-            ...sel,
-            flex: '1 1 220px',
-            paddingLeft: 12,
-          }}
+          style={{ ...sel, flex: '1 1 220px', paddingLeft: 12 }}
         />
         <select value={filterTipo} onChange={e => setFilterTipo(e.target.value)} style={sel}>
           <option value="all">Todos los tipos</option>
@@ -121,7 +176,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
         </button>
       </div>
 
-      {/* Count + active filters */}
+      {/* Count + clear filters */}
       <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 12 }}>
         {filtered.length} resultado{filtered.length !== 1 ? 's' : ''} de {leads.length} leads
         {(search || filterTipo !== 'all' || filterStatus !== 'all') && (
@@ -154,170 +209,155 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
           }}
         >
           <div style={{ fontSize: 28, marginBottom: 12 }}>◌</div>
-          <div style={{ color: 'var(--text)', fontWeight: 600, marginBottom: 6 }}>
-            Sin resultados
-          </div>
+          <div style={{ color: 'var(--text)', fontWeight: 600, marginBottom: 6 }}>Sin resultados</div>
           <div style={{ color: 'var(--muted)', fontSize: 13 }}>
             Prueba con otros filtros o términos de búsqueda.
           </div>
         </div>
       ) : (
-        <div
-          style={{
-            background: 'var(--bg2)',
-            border: '1px solid var(--border)',
-            borderRadius: 12,
-            overflow: 'hidden',
-          }}
-        >
-          {/* Header */}
+        <>
+          {/* ── Desktop table ── */}
           <div
+            className="admin-table-desktop"
             style={{
-              display: 'grid',
-              gridTemplateColumns: '220px 1fr 110px 140px 130px',
-              padding: '10px 16px',
-              borderBottom: '1px solid var(--border)',
-              fontSize: 11,
-              color: 'var(--subtle)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.07em',
-              fontWeight: 600,
+              background: 'var(--bg2)',
+              border: '1px solid var(--border)',
+              borderRadius: 12,
+              overflow: 'hidden',
             }}
           >
-            <div>Email</div>
-            <div>Mensaje</div>
-            <div>Tipo</div>
-            <div>Estado</div>
-            <div>Fecha</div>
+            {/* Header */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '220px 1fr 110px 140px 130px',
+                padding: '10px 16px',
+                borderBottom: '1px solid var(--border)',
+                fontSize: 11,
+                color: 'var(--subtle)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.07em',
+                fontWeight: 600,
+              }}
+            >
+              <div>Email</div>
+              <div>Mensaje</div>
+              <div>Tipo</div>
+              <div>Estado</div>
+              <div>Fecha</div>
+            </div>
+
+            {/* Rows */}
+            {filtered.map((lead, i) => {
+              const isExpanded = expanded === lead.id
+              const isHovered  = hoveredId === lead.id
+              const isUpdating = updatingId === lead.id
+
+              return (
+                <div
+                  key={lead.id}
+                  style={{
+                    borderBottom: i < filtered.length - 1 ? '1px solid var(--border)' : 'none',
+                    background: isHovered ? 'var(--bg3)' : 'transparent',
+                    transition: 'background 0.1s',
+                  }}
+                  onMouseEnter={() => setHoveredId(lead.id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                >
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '220px 1fr 110px 140px 130px',
+                      padding: '13px 16px',
+                      alignItems: 'start',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => setExpanded(isExpanded ? null : lead.id)}
+                  >
+                    <div style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 500, paddingRight: 12, wordBreak: 'break-all', lineHeight: 1.4 }}>
+                      {lead.email}
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--muted)', paddingRight: 12, lineHeight: 1.5 }}>
+                      {isExpanded
+                        ? lead.mensaje
+                        : lead.mensaje.length > 90
+                        ? lead.mensaje.slice(0, 90) + '…'
+                        : lead.mensaje}
+                    </div>
+                    <div style={{ paddingRight: 8 }}>
+                      <TipoBadge tipo={lead.tipo} />
+                    </div>
+                    <div onClick={e => e.stopPropagation()}>
+                      <StatusSelect lead={lead} isUpdating={isUpdating} onUpdate={updateStatus} />
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--subtle)', lineHeight: 1.4 }}>
+                      {new Date(lead.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                      <br />
+                      <span style={{ opacity: 0.7 }}>
+                        {new Date(lead.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
-          {/* Rows */}
-          {filtered.map((lead, i) => {
-            const cfg = STATUS_CONFIG[lead.status as Status] ?? STATUS_CONFIG.new
-            const isExpanded = expanded === lead.id
-            const isHovered  = hoveredId === lead.id
-            const isUpdating = updatingId === lead.id
+          {/* ── Mobile cards ── */}
+          <div className="admin-table-mobile">
+            {filtered.map(lead => {
+              const isExpanded = expanded === lead.id
+              const isUpdating = updatingId === lead.id
 
-            return (
-              <div
-                key={lead.id}
-                style={{
-                  borderBottom: i < filtered.length - 1 ? '1px solid var(--border)' : 'none',
-                  background: isHovered ? 'var(--bg3)' : 'transparent',
-                  transition: 'background 0.1s',
-                }}
-                onMouseEnter={() => setHoveredId(lead.id)}
-                onMouseLeave={() => setHoveredId(null)}
-              >
-                {/* Main row */}
+              return (
                 <div
+                  key={lead.id}
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: '220px 1fr 110px 140px 130px',
-                    padding: '13px 16px',
-                    alignItems: 'start',
+                    background: 'var(--bg2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 12,
+                    padding: '14px 16px',
                     cursor: 'pointer',
+                    transition: 'border-color 0.15s',
                   }}
                   onClick={() => setExpanded(isExpanded ? null : lead.id)}
                 >
-                  {/* Email */}
-                  <div
-                    style={{
-                      fontSize: 13,
-                      color: 'var(--accent)',
-                      fontWeight: 500,
-                      paddingRight: 12,
-                      wordBreak: 'break-all',
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {lead.email}
+                  {/* Email + date */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                    <div style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 500, wordBreak: 'break-all', flex: 1, paddingRight: 12, lineHeight: 1.4 }}>
+                      {lead.email}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--subtle)', flexShrink: 0, textAlign: 'right', lineHeight: 1.5 }}>
+                      {new Date(lead.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                      <br />
+                      <span style={{ opacity: 0.7 }}>
+                        {new Date(lead.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Mensaje preview */}
-                  <div
-                    style={{
-                      fontSize: 13,
-                      color: 'var(--muted)',
-                      paddingRight: 12,
-                      lineHeight: 1.5,
-                    }}
-                  >
+                  {/* Mensaje */}
+                  <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, marginBottom: 12 }}>
                     {isExpanded
                       ? lead.mensaje
-                      : lead.mensaje.length > 90
-                      ? lead.mensaje.slice(0, 90) + '…'
+                      : lead.mensaje.length > 100
+                      ? lead.mensaje.slice(0, 100) + '…'
                       : lead.mensaje}
                   </div>
 
-                  {/* Tipo */}
-                  <div style={{ paddingRight: 8 }}>
-                    {lead.tipo ? (
-                      <span
-                        style={{
-                          fontSize: 11,
-                          padding: '3px 8px',
-                          borderRadius: 5,
-                          background: 'rgba(155,92,255,0.1)',
-                          color: 'var(--accent2)',
-                          border: '1px solid rgba(155,92,255,0.2)',
-                          fontWeight: 500,
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {TIPO_LABELS[lead.tipo] ?? lead.tipo}
-                      </span>
-                    ) : (
-                      <span style={{ color: 'var(--subtle)', fontSize: 12 }}>—</span>
-                    )}
-                  </div>
-
-                  {/* Status dropdown */}
-                  <div onClick={e => e.stopPropagation()}>
-                    <select
-                      value={lead.status}
-                      onChange={e => updateStatus(lead.id, e.target.value as Status)}
-                      disabled={isUpdating}
-                      style={{
-                        fontSize: 11,
-                        padding: '4px 8px',
-                        borderRadius: 6,
-                        background: cfg.bg,
-                        border: `1px solid ${cfg.color}40`,
-                        color: cfg.color,
-                        cursor: isUpdating ? 'wait' : 'pointer',
-                        outline: 'none',
-                        fontWeight: 600,
-                        opacity: isUpdating ? 0.6 : 1,
-                        transition: 'opacity 0.15s',
-                      }}
-                    >
-                      {(Object.keys(STATUS_CONFIG) as Status[]).map(s => (
-                        <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Fecha */}
-                  <div style={{ fontSize: 12, color: 'var(--subtle)', lineHeight: 1.4 }}>
-                    {new Date(lead.createdAt).toLocaleDateString('es-ES', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: '2-digit',
-                    })}
-                    <br />
-                    <span style={{ opacity: 0.7 }}>
-                      {new Date(lead.createdAt).toLocaleTimeString('es-ES', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
+                  {/* Tipo + status */}
+                  <div
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <TipoBadge tipo={lead.tipo} />
+                    <StatusSelect lead={lead} isUpdating={isUpdating} onUpdate={updateStatus} />
                   </div>
                 </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        </>
       )}
     </div>
   )

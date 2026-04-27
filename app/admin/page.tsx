@@ -110,7 +110,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Charts row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 16, marginBottom: 28 }}>
+      <div className="admin-grid-split" style={{ gap: 16, marginBottom: 28 }}>
         {/* Bar chart */}
         <div
           style={{
@@ -180,7 +180,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Bottom row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 16 }}>
+      <div className="admin-grid-split" style={{ gap: 16 }}>
         {/* Recent activity */}
         <div
           style={{

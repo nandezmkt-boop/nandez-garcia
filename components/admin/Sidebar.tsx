@@ -27,8 +27,9 @@ const NAV = [
   },
 ] as const
 
-function LogoutButton() {
+function LogoutButton({ onClose }: { onClose?: () => void }) {
   async function handleLogout() {
+    onClose?.()
     await fetch('/api/auth/logout', { method: 'POST' })
     window.location.href = '/admin/login'
   }
@@ -79,11 +80,12 @@ function LogoutButton() {
   )
 }
 
-export function Sidebar() {
+export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname()
 
   return (
     <aside
+      className={`admin-sidebar${isOpen ? ' admin-sidebar--open' : ''}`}
       style={{
         width: 220,
         flexShrink: 0,
@@ -146,6 +148,7 @@ export function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={() => onClose?.()}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -183,7 +186,7 @@ export function Sidebar() {
 
       {/* Footer / Logout */}
       <div style={{ padding: '16px 8px 0', borderTop: '1px solid var(--border)' }}>
-        <LogoutButton />
+        <LogoutButton onClose={onClose} />
       </div>
     </aside>
   )

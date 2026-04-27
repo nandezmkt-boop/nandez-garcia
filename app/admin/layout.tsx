@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { Sidebar } from '@/components/admin/Sidebar'
+import { AdminShell } from '@/components/admin/AdminShell'
 
 export const metadata = {
   title: 'Admin — Nández García',
@@ -14,25 +14,5 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <>{children}</>
   }
 
-  return (
-    <div
-      style={{
-        display: 'flex',
-        height: '100vh',
-        overflow: 'hidden',
-        background: 'var(--bg)',
-      }}
-    >
-      <Sidebar />
-      <div
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '36px 40px',
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  )
+  return <AdminShell>{children}</AdminShell>
 }
