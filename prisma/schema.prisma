@@ -16,3 +16,22 @@ model Lead {
   source    String   @default("landing")
   createdAt DateTime @default(now())
 }
+
+enum EventType {
+  LEAD_CREATED
+  LEAD_STATUS_CHANGED
+  LEAD_UPDATED
+}
+
+model Event {
+  id        String    @id @default(cuid())
+  type      EventType
+  entity    String?
+  entityId  String?
+  payload   Json?
+  createdAt DateTime  @default(now())
+
+  @@index([type])
+  @@index([entityId])
+  @@index([createdAt])
+}

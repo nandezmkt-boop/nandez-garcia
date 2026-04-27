@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { trackLeadStatusChanged } from '@/lib/event-service'
 
 const VALID_STATUSES = ['new', 'contacted', 'closed']
 
@@ -11,10 +12,20 @@ export async function PATCH(
     if (!VALID_STATUSES.includes(status)) {
       return Response.json({ error: 'Invalid status' }, { status: 400 })
     }
+
+    const existing = await prisma.lead.findUnique({
+      where: { id: params.id },
+      select: { status: true },
+    })
+    const previousStatus = existing?.status ?? 'new'
+
     const lead = await prisma.lead.update({
       where: { id: params.id },
       data: { status },
     })
+
+    void trackLeadStatusChanged(lead, previousStatus)
+
     return Response.json({ ok: true, lead })
   } catch {
     return Response.json({ error: 'Error updating lead' }, { status: 500 })
