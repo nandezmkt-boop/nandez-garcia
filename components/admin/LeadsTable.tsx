@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 export type LeadRow = {
   id: string
@@ -59,11 +59,25 @@ function StatusSelect({
   isError: boolean
   onUpdate: (id: string, status: Status) => void
 }) {
-  const cfg = STATUS_CONFIG[lead.status as Status] ?? STATUS_CONFIG.new
+  const [localValue, setLocalValue] = useState<Status>(lead.status as Status)
+
+  // Sync if parent status changes (successful PATCH or error rollback)
+  useEffect(() => { setLocalValue(lead.status as Status) }, [lead.status])
+
+  function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    e.stopPropagation()
+    const newStatus = e.target.value as Status
+    setLocalValue(newStatus)
+    onUpdate(lead.id, newStatus)
+  }
+
+  const cfg = STATUS_CONFIG[localValue] ?? STATUS_CONFIG.new
   return (
     <select
-      value={lead.status}
-      onChange={e => onUpdate(lead.id, e.target.value as Status)}
+      value={localValue}
+      onChange={handleChange}
+      onMouseDown={e => e.stopPropagation()}
+      onClick={e => e.stopPropagation()}
       disabled={isUpdating}
       title={isError ? 'Error al actualizar — revisa la consola' : undefined}
       style={{
@@ -304,7 +318,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
                     <div style={{ paddingRight: 8 }}>
                       <TipoBadge tipo={lead.tipo} />
                     </div>
-                    <div onClick={e => e.stopPropagation()}>
+                    <div>
                       <StatusSelect lead={lead} isUpdating={isUpdating} isError={isError} onUpdate={updateStatus} />
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--subtle)', lineHeight: 1.4 }}>
