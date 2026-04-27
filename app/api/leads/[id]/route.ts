@@ -24,10 +24,13 @@ export async function PATCH(
       data: { status },
     })
 
-    void trackLeadStatusChanged(lead, previousStatus)
+    // Awaited explicitly so Vercel doesn't terminate the function before
+    // the event is persisted and the Telegram notification is dispatched.
+    await trackLeadStatusChanged(lead, previousStatus)
 
     return Response.json({ ok: true, lead })
-  } catch {
+  } catch (err) {
+    console.error('[leads/patch] Unhandled error:', err)
     return Response.json({ error: 'Error updating lead' }, { status: 500 })
   }
 }

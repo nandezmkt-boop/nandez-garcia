@@ -17,16 +17,18 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const TIPO_LABELS: Record<string, string> = {
-  negocio:   'Negocio',
-  idea:      'Idea',
+  negocio:    'Negocio',
+  idea:       'Idea',
   'no-claro': 'Sin definir',
 }
 
-function statusLabel(s: string)     { return STATUS_LABELS[s] ?? s }
+function statusLabel(s: string) { return STATUS_LABELS[s] ?? s }
 function tipoLabel(t: string | null | undefined) { return t ? (TIPO_LABELS[t] ?? t) : 'Sin definir' }
 function truncate(s: string, n = 200) { return s.length > n ? s.slice(0, n) + '…' : s }
 
 export async function trackLeadCreated(lead: LeadSnapshot): Promise<void> {
+  console.log(`[event-service] LEAD_CREATED ${lead.email}`)
+
   await createEvent({
     type: EventType.LEAD_CREATED,
     entity: 'Lead',
@@ -49,7 +51,8 @@ export async function trackLeadCreated(lead: LeadSnapshot): Promise<void> {
     lines.push(`💬 <b>Mensaje:</b> ${truncate(lead.mensaje)}`)
   }
 
-  void sendTelegramMessage(lines.join('\n'))
+  // Awaited so the serverless function doesn't exit before the HTTP call completes.
+  await sendTelegramMessage(lines.join('\n'))
 }
 
 export async function trackLeadStatusChanged(
@@ -57,6 +60,8 @@ export async function trackLeadStatusChanged(
   previousStatus: string
 ): Promise<void> {
   if (previousStatus === lead.status) return
+
+  console.log(`[event-service] LEAD_STATUS_CHANGED ${lead.email}: ${previousStatus} → ${lead.status}`)
 
   await createEvent({
     type: EventType.LEAD_STATUS_CHANGED,
@@ -77,5 +82,6 @@ export async function trackLeadStatusChanged(
     `✅ <b>Nuevo estado:</b> ${statusLabel(lead.status)}`,
   ].join('\n')
 
-  void sendTelegramMessage(text)
+  // Awaited so the serverless function doesn't exit before the HTTP call completes.
+  await sendTelegramMessage(text)
 }
