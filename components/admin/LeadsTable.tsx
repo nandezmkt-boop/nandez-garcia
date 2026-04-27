@@ -149,30 +149,40 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
     return r
   }, [leads, search, filterTipo, filterStatus, sortDir])
 
-  async function updateStatus(id: string, status: Status) {
-    console.log('[leads] updateStatus called', id, status)
-    setUpdatingId(id)
-    setErrorId(null)
-    try {
-      const res = await fetch(`/api/leads/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      })
-      if (res.ok) {
-        setLeads(prev => prev.map(l => l.id === id ? { ...l, status } : l))
-      } else {
-        const body = await res.text()
-        console.error('[leads] PATCH failed:', res.status, body)
-        setErrorId(id)
-      }
-    } catch (err) {
-      console.error('[leads] PATCH error:', err)
+async function updateStatus(id: string, status: Status) {
+  console.log('[leads] updateStatus called', id, status)
+
+  setUpdatingId(id)
+  setErrorId(null)
+
+  try {
+    console.log("🚀 ANTES DEL FETCH")
+
+    const res = await fetch(`/api/leads/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+
+    console.log("✅ DESPUÉS DEL FETCH", res)
+
+    if (res.ok) {
+      setLeads(prev =>
+        prev.map(l => l.id === id ? { ...l, status } : l)
+      )
+    } else {
+      const body = await res.text()
+      console.error('[leads] PATCH failed:', res.status, body)
       setErrorId(id)
-    } finally {
-      setUpdatingId(null)
     }
+
+  } catch (err) {
+    console.error('💥 ERROR REAL:', err)
+    setErrorId(id)
+  } finally {
+    setUpdatingId(null)
   }
+}
 
   return (
     <div>
