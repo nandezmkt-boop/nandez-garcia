@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { trackLeadStatusChanged } from '@/lib/event-service'
 
@@ -8,6 +9,10 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    if (!cookies().has('admin-auth')) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { status } = await req.json()
     if (!VALID_STATUSES.includes(status)) {
       return Response.json({ error: 'Invalid status' }, { status: 400 })

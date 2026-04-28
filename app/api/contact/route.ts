@@ -4,8 +4,21 @@ import { prisma } from '@/lib/prisma'
 import { trackLeadCreated } from '@/lib/event-service'
 import { generateAndStoreLeadResponse } from '@/lib/ai-response'
 
+const rateLimitMap = new Map<string, { count: number; reset: number }>()
+
 export async function POST(req: Request) {
   try {
+    const ip = (req.headers.get('x-forwarded-for') ?? 'unknown').split(',')[0].trim()
+    const key = `rl:${ip}`
+    const now = Date.now()
+    const entry = rateLimitMap.get(key)
+    if (entry && now < entry.reset && entry.count >= 3) {
+      return Response.json({ error: 'Demasiadas solicitudes. Inténtalo más tarde.' }, { status: 429 })
+    }
+    rateLimitMap.set(key, entry && now < entry.reset
+      ? { count: entry.count + 1, reset: entry.reset }
+      : { count: 1, reset: now + 3_600_000 })
+
     const body = await req.json()
     const parsed = contactSchema.safeParse(body)
 

@@ -4,6 +4,10 @@ const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 const TIPO_LABELS: Record<string, string> = {
   negocio: 'Una página que capte clientes',
   idea: 'Lanzar una idea',
@@ -29,7 +33,7 @@ export async function sendContactEmail(
       <p><strong>Email:</strong> ${email}</p>
       ${tipoLabel ? `<p><strong>Tipo:</strong> ${tipoLabel}</p>` : ''}
       <p><strong>Proyecto:</strong></p>
-      <p>${mensaje.replace(/\n/g, '<br>')}</p>
+      <p>${escapeHtml(mensaje).replace(/\n/g, '<br>')}</p>
     `,
   })
 }

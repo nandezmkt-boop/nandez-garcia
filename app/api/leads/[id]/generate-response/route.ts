@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { generateAndStoreLeadResponse } from '@/lib/ai-response'
 
@@ -6,6 +7,10 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    if (!cookies().has('admin-auth')) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const url = new URL(req.url)
     const force = url.searchParams.get('force') === '1'
 
@@ -21,7 +26,8 @@ export async function POST(
     const result = await generateAndStoreLeadResponse(lead, { force })
 
     if (!result.ok) {
-      return Response.json({ error: result.error }, { status: 500 })
+      console.error('[generate-response] AI error:', result.error)
+      return Response.json({ error: 'No se pudo generar la respuesta' }, { status: 500 })
     }
 
     return Response.json({ ok: true, response: result.response })

@@ -68,8 +68,6 @@ function StatusSelect({
   useEffect(() => { setLocalValue(lead.status as Status) }, [lead.status])
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-  console.log("🔥 CAMBIO DETECTADO", lead.id, e.target.value)
-
     e.stopPropagation()
     const newStatus = e.target.value as Status
     setLocalValue(newStatus)
@@ -265,7 +263,6 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
   }, [leads, search, filterTipo, filterStatus, sortDir])
 
   async function generateAi(id: string, force = false) {
-    console.log('[leads] generateAi called', id, { force })
     setGeneratingId(id)
     try {
       const res = await fetch(`/api/leads/${id}/generate-response${force ? '?force=1' : ''}`, {
@@ -303,21 +300,15 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
   }
 
 async function updateStatus(id: string, status: Status) {
-  console.log('[leads] updateStatus called', id, status)
-
   setUpdatingId(id)
   setErrorId(null)
 
   try {
-    console.log("🚀 ANTES DEL FETCH")
-
     const res = await fetch(`/api/leads/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     })
-
-    console.log("✅ DESPUÉS DEL FETCH", res)
 
     if (res.ok) {
       setLeads(prev =>
@@ -330,7 +321,7 @@ async function updateStatus(id: string, status: Status) {
     }
 
   } catch (err) {
-    console.error('💥 ERROR REAL:', err)
+    console.error('[leads] updateStatus error:', err)
     setErrorId(id)
   } finally {
     setUpdatingId(null)

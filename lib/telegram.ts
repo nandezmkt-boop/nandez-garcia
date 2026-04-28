@@ -20,7 +20,7 @@ export async function sendTelegramMessage(text: string): Promise<void> {
   }
 
   try {
-    console.log(`[telegram] Sending message to chat ${chatId}...`)
+    console.log('[telegram] Sending message...')
 
     const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
       method: 'POST',
