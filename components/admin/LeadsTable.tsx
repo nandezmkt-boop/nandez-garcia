@@ -108,14 +108,18 @@ function AiResponsePanel({
   lead,
   isGenerating,
   isCopied,
+  isDeleting,
   onGenerate,
   onCopy,
+  onDelete,
 }: {
   lead: LeadRow
   isGenerating: boolean
   isCopied: boolean
+  isDeleting: boolean
   onGenerate: (id: string, force?: boolean) => void
   onCopy: (id: string, text: string) => void
+  onDelete: (id: string, email: string) => void
 }) {
   const hasResponse = !!lead.aiResponse
   const hasError    = !!lead.aiError && !hasResponse
@@ -210,6 +214,24 @@ function AiResponsePanel({
           Error al generar: {lead.aiError}
         </div>
       )}
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+        <button
+          onClick={() => onDelete(lead.id, lead.email)}
+          disabled={isDeleting}
+          style={{
+            ...btn,
+            padding: '5px 10px',
+            fontSize: 11,
+            color: '#ef4444',
+            borderColor: 'rgba(239,68,68,0.4)',
+            opacity: isDeleting ? 0.6 : 1,
+            cursor: isDeleting ? 'wait' : 'pointer',
+          }}
+        >
+          {isDeleting ? 'Eliminando…' : 'Eliminar lead'}
+        </button>
+      </div>
     </div>
   )
 }
@@ -246,6 +268,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
   const [expanded, setExpanded]         = useState<string | null>(null)
   const [generatingId, setGeneratingId] = useState<string | null>(null)
   const [copiedId, setCopiedId]         = useState<string | null>(null)
+  const [deletingId, setDeletingId]     = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     let r = [...leads]
@@ -296,6 +319,24 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
       setTimeout(() => setCopiedId(c => c === id ? null : c), 1600)
     } catch (err) {
       console.error('[leads] clipboard error:', err)
+    }
+  }
+
+  async function deleteLead(id: string, email: string) {
+    if (!window.confirm(`¿Eliminar el lead de ${email}?\nEsta acción no se puede deshacer.`)) return
+    setDeletingId(id)
+    try {
+      const res = await fetch(`/api/leads/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setLeads(prev => prev.filter(l => l.id !== id))
+        if (expanded === id) setExpanded(null)
+      } else {
+        console.error('[leads] DELETE failed:', res.status)
+      }
+    } catch (err) {
+      console.error('[leads] deleteLead error:', err)
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -356,6 +397,9 @@ async function updateStatus(id: string, status: Status) {
         </select>
         <button onClick={() => setSortDir(d => d === 'desc' ? 'asc' : 'desc')} style={btn}>
           Fecha {sortDir === 'desc' ? '↓' : '↑'}
+        </button>
+        <button onClick={() => { window.location.href = '/api/leads/export' }} style={btn}>
+          Exportar CSV
         </button>
       </div>
 
@@ -493,8 +537,10 @@ async function updateStatus(id: string, status: Status) {
                       lead={lead}
                       isGenerating={isGenerating}
                       isCopied={isCopied}
+                      isDeleting={deletingId === lead.id}
                       onGenerate={generateAi}
                       onCopy={copyToClipboard}
+                      onDelete={deleteLead}
                     />
                   )}
                 </div>
@@ -565,8 +611,10 @@ async function updateStatus(id: string, status: Status) {
                         lead={lead}
                         isGenerating={isGenerating}
                         isCopied={isCopied}
+                        isDeleting={deletingId === lead.id}
                         onGenerate={generateAi}
                         onCopy={copyToClipboard}
+                        onDelete={deleteLead}
                       />
                     </div>
                   )}

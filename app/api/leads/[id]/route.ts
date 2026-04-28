@@ -39,3 +39,19 @@ export async function PATCH(
     return Response.json({ error: 'Error updating lead' }, { status: 500 })
   }
 }
+
+export async function DELETE(
+  _req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    if (!cookies().has('admin-auth')) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    await prisma.lead.delete({ where: { id: params.id } })
+    return Response.json({ ok: true })
+  } catch (err) {
+    console.error('[leads/delete] Unhandled error:', err)
+    return Response.json({ error: 'Error deleting lead' }, { status: 500 })
+  }
+}
