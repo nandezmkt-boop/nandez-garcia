@@ -1,12 +1,15 @@
 'use client'
 import { useState } from 'react'
 import { Sidebar } from './Sidebar'
+import { ToastProvider } from './Toast'
+import { ConfirmProvider } from './ConfirmDialog'
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <>
+    <ToastProvider>
+      <ConfirmProvider>
       {/* Mobile-only top bar */}
       <div className="admin-mobile-bar">
         <button
@@ -55,6 +58,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </div>
-    </>
+      </ConfirmProvider>
+    </ToastProvider>
   )
 }
