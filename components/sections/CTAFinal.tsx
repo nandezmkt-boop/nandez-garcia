@@ -16,12 +16,12 @@ const TIPO_OPTIONS = [
   { value: 'no-claro', label: 'No lo tengo claro aún' },
 ] as const
 
-function SubmitButton({ sending }: { sending: boolean }) {
+function SubmitButton({ sending, blocked }: { sending: boolean; blocked: boolean }) {
   const [hovered, setHovered] = useState(false)
   return (
     <button
       type="submit"
-      disabled={sending}
+      disabled={sending || blocked}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="w-full inline-flex items-center justify-center gap-2 font-head font-semibold text-[15px] tracking-tight rounded-lg px-7 py-[14px] text-white transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -187,7 +187,7 @@ function CTAFinalForm({ showUrgency }: { showUrgency: boolean }) {
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitted },
   } = useForm<ContactInput>({
     resolver: zodResolver(contactSchema),
     defaultValues: { tipo: initialTipo },
@@ -385,10 +385,12 @@ function CTAFinalForm({ showUrgency }: { showUrgency: boolean }) {
                       : 'var(--border)')
                   }
                 />
-                {errors.mensaje && (
+                {errors.mensaje ? (
                   <p className="text-[12px]" style={{ color: '#ff6b6b' }}>
                     {errors.mensaje.message}
                   </p>
+                ) : (
+                  <p className="text-[12px] text-subtle">Mínimo 20 caracteres.</p>
                 )}
               </div>
 
@@ -398,7 +400,7 @@ function CTAFinalForm({ showUrgency }: { showUrgency: boolean }) {
                 </p>
               )}
 
-              <SubmitButton sending={status === 'sending'} />
+              <SubmitButton sending={status === 'sending'} blocked={isSubmitted && Object.keys(errors).length > 0} />
 
               <p className="text-center text-[12px] text-subtle leading-[1.7]">
                 Sin spam. Sin compromiso. Sin formularios eternos.
