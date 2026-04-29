@@ -18,6 +18,8 @@ model Lead {
   aiResponse     String?
   aiResponseAt   DateTime?
   aiError        String?
+  score          Int       @default(0)
+  temperature    String    @default("cold")
 }
 
 enum EventType {

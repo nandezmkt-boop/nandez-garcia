@@ -9,13 +9,16 @@ import {
   STATUS_CONFIG,
   StatusSelect,
   TipoBadge,
+  TemperatureBadge,
+  ScorePill,
 } from './leads-shared'
 import { LeadDetailDrawer } from './LeadDetailDrawer'
 import { BulkActionsBar } from './BulkActionsBar'
 
 export type { LeadRow }
 
-type SortDir = 'desc' | 'asc'
+type SortDir   = 'desc' | 'asc'
+type SortField = 'date' | 'score'
 
 const sel: React.CSSProperties = {
   padding: '7px 11px',
@@ -39,7 +42,7 @@ const btn: React.CSSProperties = {
   whiteSpace: 'nowrap' as const,
 }
 
-const GRID_COLS = '32px 220px 1fr 110px 140px 130px'
+const GRID_COLS = '32px 195px 1fr 100px 100px 140px 110px'
 
 export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
   const toast        = useToast()
@@ -54,6 +57,9 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
   const [filterStatus, setFilterStatus] = useState(() => searchParams.get('status') ?? 'all')
   const [sortDir, setSortDir]           = useState<SortDir>(() =>
     searchParams.get('sort') === 'asc' ? 'asc' : 'desc'
+  )
+  const [sortField, setSortField]       = useState<SortField>(() =>
+    searchParams.get('sortBy') === 'score' ? 'score' : 'date'
   )
 
   const [updatingId, setUpdatingId]     = useState<string | null>(null)
@@ -77,6 +83,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
       if (filterTipo   !== 'all')  params.set('tipo',   filterTipo)
       if (filterStatus !== 'all')  params.set('status', filterStatus)
       if (sortDir      !== 'desc') params.set('sort',   sortDir)
+      if (sortField    !== 'date') params.set('sortBy', sortField)
       const qs = params.toString()
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
     }, 200)
@@ -93,7 +100,9 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
     if (filterTipo   !== 'all') r = r.filter(l => l.tipo === filterTipo)
     if (filterStatus !== 'all') r = r.filter(l => l.status === filterStatus)
     r.sort((a, b) => {
-      const diff = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      const diff = sortField === 'score'
+        ? a.score - b.score
+        : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       return sortDir === 'desc' ? -diff : diff
     })
     return r
@@ -372,8 +381,23 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
           <option value="contacted">Contactado</option>
           <option value="closed">Cerrado</option>
         </select>
-        <button onClick={() => setSortDir(d => d === 'desc' ? 'asc' : 'desc')} style={btn}>
-          Fecha {sortDir === 'desc' ? '↓' : '↑'}
+        <button
+          onClick={() => {
+            if (sortField !== 'date') { setSortField('date'); setSortDir('desc') }
+            else setSortDir(d => d === 'desc' ? 'asc' : 'desc')
+          }}
+          style={{ ...btn, color: sortField === 'date' ? 'var(--accent)' : 'var(--text)' }}
+        >
+          Fecha {sortField === 'date' ? (sortDir === 'desc' ? '↓' : '↑') : ''}
+        </button>
+        <button
+          onClick={() => {
+            if (sortField !== 'score') { setSortField('score'); setSortDir('desc') }
+            else setSortDir(d => d === 'desc' ? 'asc' : 'desc')
+          }}
+          style={{ ...btn, color: sortField === 'score' ? 'var(--accent)' : 'var(--text)' }}
+        >
+          Score {sortField === 'score' ? (sortDir === 'desc' ? '↓' : '↑') : ''}
         </button>
         <button onClick={() => { window.location.href = '/api/leads/export' }} style={btn}>
           Exportar CSV
@@ -457,6 +481,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
               <div>Email</div>
               <div>Mensaje</div>
               <div>Tipo</div>
+              <div>Temp / Score</div>
               <div>Estado</div>
               <div>Fecha</div>
             </div>
@@ -514,6 +539,10 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
                   </div>
                   <div style={{ paddingRight: 8 }}>
                     <TipoBadge tipo={lead.tipo} />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingRight: 8 }}>
+                    <TemperatureBadge temperature={lead.temperature} score={lead.score} />
+                    <ScorePill score={lead.score} />
                   </div>
                   <div>
                     <StatusSelect lead={lead} isUpdating={isUpdating} isError={isError} onUpdate={updateStatus} />
@@ -588,12 +617,15 @@ export function LeadsTable({ initialLeads }: { initialLeads: LeadRow[] }) {
                     {lead.mensaje.length > 100 ? lead.mensaje.slice(0, 100) + '…' : lead.mensaje}
                   </div>
 
-                  {/* Tipo + status */}
+                  {/* Tipo + temp + status */}
                   <div
-                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}
                     onClick={e => e.stopPropagation()}
                   >
-                    <TipoBadge tipo={lead.tipo} />
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <TipoBadge tipo={lead.tipo} />
+                      <TemperatureBadge temperature={lead.temperature} score={lead.score} />
+                    </div>
                     <StatusSelect lead={lead} isUpdating={isUpdating} isError={isError} onUpdate={updateStatus} />
                   </div>
                 </div>

@@ -1,4 +1,12 @@
+import type { Temperature } from './lead-scoring'
+
 const TELEGRAM_API = 'https://api.telegram.org'
+
+const TEMP_EMOJI: Record<Temperature, string> = {
+  hot:  '🔥',
+  warm: '🌡',
+  cold: '❄️',
+}
 
 // Must be applied to any user-supplied string inserted into an HTML-formatted
 // Telegram message. The Telegram HTML parser rejects messages containing
@@ -8,6 +16,28 @@ export function escapeHtml(s: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+}
+
+type LeadAlertInput = {
+  email: string
+  mensaje: string
+  tipo: string | null
+  score: number
+  temperature: Temperature
+}
+
+export function buildLeadAlert({ email, mensaje, tipo, score, temperature }: LeadAlertInput): string {
+  const emoji = TEMP_EMOJI[temperature]
+  const prefix = temperature === 'hot' ? '⚡ LEAD CALIENTE — RESPONDER PRONTO' : `${emoji} Nuevo lead`
+  const tipoLine = tipo ? `\n<b>Tipo:</b> ${escapeHtml(tipo)}` : ''
+  const preview = mensaje.length > 120 ? mensaje.slice(0, 120) + '…' : mensaje
+  return [
+    `${emoji} <b>${prefix}</b>`,
+    `<b>Score:</b> ${score}/100`,
+    `<b>Email:</b> ${escapeHtml(email)}${tipoLine}`,
+    '',
+    `<i>${escapeHtml(preview)}</i>`,
+  ].join('\n')
 }
 
 export async function sendTelegramMessage(text: string): Promise<void> {

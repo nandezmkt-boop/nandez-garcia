@@ -20,6 +20,8 @@ export default async function LeadsPage() {
     aiResponse: l.aiResponse,
     aiResponseAt: l.aiResponseAt ? l.aiResponseAt.toISOString() : null,
     aiError: l.aiError,
+    score: l.score,
+    temperature: l.temperature as LeadRow['temperature'],
   }))
 
   const newCount       = leads.filter(l => l.status === 'new').length

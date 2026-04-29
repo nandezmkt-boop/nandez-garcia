@@ -5,6 +5,7 @@ import {
   type Status,
   StatusSelect,
   TipoBadge,
+  TemperatureBadge,
   relativeTime,
 } from './leads-shared'
 
@@ -182,6 +183,7 @@ export function LeadDetailDrawer({
             }}
           >
             <TipoBadge tipo={lead.tipo} />
+            <TemperatureBadge temperature={lead.temperature} score={lead.score} />
             <StatusSelect
               lead={lead}
               isUpdating={isUpdating}

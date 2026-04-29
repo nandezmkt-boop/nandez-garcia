@@ -1,6 +1,14 @@
 'use client'
 import { useEffect, useState } from 'react'
 
+export type Temperature = 'cold' | 'warm' | 'hot'
+
+export const TEMPERATURE_CONFIG: Record<Temperature, { label: string; color: string; bg: string; border: string }> = {
+  hot:  { label: '🔥 Hot',  color: '#ef4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.3)'  },
+  warm: { label: '🌡 Warm', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)' },
+  cold: { label: '❄ Cold', color: '#64748b', bg: 'rgba(100,116,139,0.1)', border: 'rgba(100,116,139,0.3)' },
+}
+
 export type LeadRow = {
   id: string
   email: string
@@ -12,6 +20,8 @@ export type LeadRow = {
   aiResponse: string | null
   aiResponseAt: string | null
   aiError: string | null
+  score: number
+  temperature: Temperature
 }
 
 export type Status = 'new' | 'contacted' | 'closed'
@@ -102,6 +112,46 @@ export function TipoBadge({ tipo }: { tipo: string | null }) {
       }}
     >
       {TIPO_LABELS[tipo] ?? tipo}
+    </span>
+  )
+}
+
+export function TemperatureBadge({ temperature, score }: { temperature: Temperature; score: number }) {
+  const cfg = TEMPERATURE_CONFIG[temperature] ?? TEMPERATURE_CONFIG.cold
+  return (
+    <span
+      title={`Score: ${score}/100`}
+      style={{
+        fontSize: 11,
+        padding: '3px 8px',
+        borderRadius: 5,
+        background: cfg.bg,
+        color: cfg.color,
+        border: `1px solid ${cfg.border}`,
+        fontWeight: 600,
+        whiteSpace: 'nowrap',
+        cursor: 'default',
+      }}
+    >
+      {cfg.label}
+    </span>
+  )
+}
+
+export function ScorePill({ score }: { score: number }) {
+  const color = score >= 71 ? '#ef4444' : score >= 31 ? '#f59e0b' : '#64748b'
+  return (
+    <span
+      style={{
+        fontSize: 11,
+        fontWeight: 700,
+        color,
+        minWidth: 28,
+        textAlign: 'right' as const,
+        display: 'inline-block',
+      }}
+    >
+      {score}
     </span>
   )
 }

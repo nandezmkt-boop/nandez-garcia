@@ -3,6 +3,8 @@ import { sendContactEmail } from '@/lib/send-email'
 import { prisma } from '@/lib/prisma'
 import { trackLeadCreated } from '@/lib/event-service'
 import { generateAndStoreLeadResponse } from '@/lib/ai-response'
+import { scoreLead, getTemperature } from '@/lib/lead-scoring'
+import { buildLeadAlert, sendTelegramMessage } from '@/lib/telegram'
 
 const rateLimitMap = new Map<string, { count: number; reset: number }>()
 
@@ -28,23 +30,30 @@ export async function POST(req: Request) {
 
     const { email, mensaje, tipo } = parsed.data
 
+    const score = scoreLead({ email, mensaje, tipo: tipo ?? null })
+    const temperature = getTemperature(score)
+
     const lead = await prisma.lead.create({
-      data: { email, mensaje, tipo },
+      data: { email, mensaje, tipo, score, temperature },
     })
 
-    // Awaited so Vercel doesn't terminate the function before side-effects finish.
-    // generateAndStoreLeadResponse swallows its own errors (persists to aiError),
-    // so a failing LLM call never breaks lead creation.
-    await Promise.all([
+    const tasks: Promise<unknown>[] = [
       sendContactEmail(email, mensaje, tipo),
       trackLeadCreated(lead),
-      generateAndStoreLeadResponse({
-        id: lead.id,
-        email: lead.email,
-        mensaje: lead.mensaje,
-        tipo: lead.tipo,
-      }),
-    ])
+    ]
+
+    if (temperature === 'hot') {
+      tasks.push(
+        generateAndStoreLeadResponse({ id: lead.id, email, mensaje, tipo: tipo ?? null }),
+        sendTelegramMessage(buildLeadAlert({ email, mensaje, tipo: tipo ?? null, score, temperature })),
+      )
+    } else if (temperature === 'warm') {
+      tasks.push(
+        generateAndStoreLeadResponse({ id: lead.id, email, mensaje, tipo: tipo ?? null }),
+      )
+    }
+
+    await Promise.all(tasks)
 
     return Response.json({ ok: true })
   } catch {
